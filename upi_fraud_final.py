@@ -35,6 +35,7 @@ import re
 import warnings
 import qrcode
 import qrcode.image.pil  # Optional, for image-based QR codes using PIL
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, confusion_matrix, roc_curve, auc
 warnings.filterwarnings('ignore')
 
 # Set page configuration
@@ -1685,58 +1686,58 @@ def display_algorithm_explanations():
 
 def display_performance_metrics(df, ensemble_predict):
     """Display performance metrics of the fraud detection system"""
-    
+        
     st.header("Performance Metrics")
-    
+        
     # Split data
     X = df.drop(["Transaction_ID", "User_ID", "Beneficiary_ID", "IP_Address", 
-                 "Transaction_Date", "Transaction_Success", "Fraud_Type", "Is_Fraud"], axis=1)
+                "Transaction_Date", "Transaction_Success", "Fraud_Type", "Is_Fraud"], axis=1)
     y = df["Is_Fraud"]
-    
+        
     # Train-test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
+        
     # Get predictions
     y_pred, y_score = ensemble_predict(X_test)
-    
+        
     # Calculate metrics
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred)
     recall = recall_score(y_test, y_pred)
     f1 = f1_score(y_test, y_pred)
-    
+        
     # Display metrics
     st.write("### Model Performance")
     col1, col2, col3, col4 = st.columns(4)
-    
+        
     with col1:
         st.metric("Accuracy", f"{accuracy:.4f}")
-    
+        
     with col2:
         st.metric("Precision", f"{precision:.4f}")
-    
+        
     with col3:
         st.metric("Recall", f"{recall:.4f}")
-    
+        
     with col4:
         st.metric("F1 Score", f"{f1:.4f}")
-    
+        
     # Confusion matrix
     st.write("### Confusion Matrix")
     cm = confusion_matrix(y_test, y_pred)
-    
+        
     fig, ax = plt.subplots(figsize=(6, 6))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Actual")
     ax.set_title("Confusion Matrix")
     st.pyplot(fig)
-    
+        
     # ROC Curve
     st.write("### ROC Curve")
     fpr, tpr, _ = roc_curve(y_test, y_score)
     roc_auc = auc(fpr, tpr)
-    
+        
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(fpr, tpr, color="darkorange", lw=2, label=f"ROC curve (area = {roc_auc:.2f})")
     ax.plot([0, 1], [0, 1], color="navy", lw=2, linestyle="--")
